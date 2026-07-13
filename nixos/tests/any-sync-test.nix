@@ -106,7 +106,7 @@ let
 
   clientConfigPath = pkgs.writeText "client.yml" (builtins.toJSON networkConfig);
 in
-pkgs.nixosTest {
+pkgs.testers.nixosTest {
 
   name = "any-sync-test";
 
