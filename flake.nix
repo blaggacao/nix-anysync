@@ -2,7 +2,7 @@
   description = "Any-Sync NixOS flake";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-26.05";
   };
 
   outputs =
@@ -37,6 +37,10 @@
           config = {
             allowUnfree = true;
             allowUnfreePredicate = _: true;
+            permittedInsecurePackages = [
+              # MinIO is used in tests and is marked insecure
+              "minio-2025-10-15T17-29-55Z"
+            ];
           };
         }
       );
@@ -89,7 +93,7 @@
         {
           default = pkgs.mkShell {
             nativeBuildInputs = with pkgs; [
-              nixfmt-rfc-style
+              nixfmt
               nixd
             ];
           };
