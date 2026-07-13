@@ -39,7 +39,6 @@
             allowUnfreePredicate = _: true;
             permittedInsecurePackages = [
               # MinIO is used in tests and is marked insecure
-              # See: https://github.com/nixos/nixpkgs/issues/145469
               "minio-2025-10-15T17-29-55Z"
             ];
           };
