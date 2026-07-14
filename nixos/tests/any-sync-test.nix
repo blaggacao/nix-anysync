@@ -92,7 +92,7 @@ let
     {
       metric.addr = "";
       log = {
-        defaultLevel = "";
+        defaultLevel = "warn";
         namedLevels = { };
         production = false;
       };
@@ -137,14 +137,22 @@ pkgs.testers.nixosTest {
       services.mongodb = {
         enable = true;
         package = pkgs.mongodb-ce;
+        quiet = true;
         replSetName = "rs0";
         initialScript = pkgs.writeText "mongod-init-rs.js" ''
           rs.initiate({_id: "rs0", members: [{_id: 0, host: "127.0.0.1:27017"}]});
         '';
       };
 
-      # Needs to load RedisBloom module for production use
-      # loadModule = [ "/path/to/redisbloom.so" ];
+      # Needs to load bloom filter module
+      services.redis.package = pkgs.valkey.overrideAttrs (oldAttrs: {
+        doCheck = false;
+        nativeBuildInputs = oldAttrs.nativeBuildInputs or [ ] ++ [ pkgs.makeWrapper ];
+        postInstall = ''
+          wrapProgram $out/bin/valkey-server \
+            --add-flags "--loadmodule ${pkgs.valkey-bloom}/lib/libvalkey_bloom.so"
+        '';
+      });
       services.redis.servers.anysync-files = {
         enable = true;
         port = 6379;
@@ -257,7 +265,7 @@ pkgs.testers.nixosTest {
                     peerKey = opts.peerKey;
                     signingKey = opts.signingKey;
                   };
-                  apiServer.listenAddr = "0.0.0.0:8080";
+                  apiServer.listenAddr = "0.0.0.0:808${toString i}";
                   space = {
                     gcTTL = 60;
                     syncPeriod = 600;
