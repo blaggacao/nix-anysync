@@ -57,7 +57,7 @@ in
       users.groups.${group} = { };
 
       systemd.services.any-sync-coordinator = {
-        after = [ "network.target" ];
+        after = [ "network.target" "mongodb.service" ];
         wants = [ "mongodb.service" ];
         wantedBy = [ "multi-user.target" ];
 

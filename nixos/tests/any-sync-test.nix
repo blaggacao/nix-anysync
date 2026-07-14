@@ -117,13 +117,6 @@ pkgs.testers.nixosTest {
   nodes = {
     server = {
 
-      # imports = [
-      #   modules.any-sync-consensus
-      #   modules.any-sync-coordinator
-      #   modules.any-sync-filenode
-      #   modules.any-sync-node
-      # ];
-
       imports = with self.nixosModules; [
         any-sync-consensus
         any-sync-coordinator
@@ -144,6 +137,10 @@ pkgs.testers.nixosTest {
       services.mongodb = {
         enable = true;
         package = pkgs.mongodb-ce;
+        replSetName = "rs0";
+        initialScript = pkgs.writeText "mongod-init-rs.js" ''
+          rs.initiate({_id: "rs0", members: [{_id: 0, host: "127.0.0.1:27017"}]});
+        '';
       };
 
       # Needs to load RedisBloom module for production use
@@ -173,7 +170,7 @@ pkgs.testers.nixosTest {
               signingKey = "sg2O8EAvfsPI36RT4uqevZLD1XLG7b3k6O6g7mQMc9Ig8N4vZuiM/8xkhk852dZebLGx7VqEwgCrl4aMCi/whw==";
             };
             mongo = {
-              connect = "mongodb://127.0.0.1:27017/?directConnection=true";
+              connect = "mongodb://127.0.0.1:27017/?replicaSet=rs0";
               database = "consensus";
               logCollection = "log";
             };
@@ -193,7 +190,7 @@ pkgs.testers.nixosTest {
               signingKey = "sg2O8EAvfsPI36RT4uqevZLD1XLG7b3k6O6g7mQMc9Ig8N4vZuiM/8xkhk852dZebLGx7VqEwgCrl4aMCi/whw==";
             };
             mongo = {
-              connect = "mongodb://127.0.0.1:27017";
+              connect = "mongodb://127.0.0.1:27017/?replicaSet=rs0";
               database = "coordinator";
               log = "log";
               spaces = "spaces";
@@ -230,7 +227,7 @@ pkgs.testers.nixosTest {
               profile = "default";
               region = "us-east-1";
               endpoint = "http://127.0.0.1:9000";
-              forcePathStyle = true; # 'true' for self-hosted S3 Object Storage
+              forcePathStyle = true;
               credentials = {
                 accessKey = "minioAccess";
                 secretKey = "minioSecret";
@@ -299,6 +296,9 @@ pkgs.testers.nixosTest {
               }
             ];
       };
+
+      # Add MongoDB shell for replica set status check in tests
+      environment.systemPackages = [ pkgs.mongodb-ce ];
     };
 
     client = {
@@ -318,6 +318,14 @@ pkgs.testers.nixosTest {
 
   testScript = ''
     start_all()
+
+    # Wait for MongoDB to be ready with replica set
+    server.wait_for_unit("mongodb.service");
+    server.wait_for_open_port(27017);
+
+    # Wait for replica set to be initialized (change streams need replica set)
+    # Using a timeout of 30 seconds to wait for rs.initiate() to complete
+    server.succeed("for i in $(seq 1 30); do if mongosh --eval 'rs.status()' 2>/dev/null | grep -q 'PRIMARY\\|SECONDARY' || mongo --eval 'rs.status()' 2>/dev/null | grep -q 'PRIMARY\\|SECONDARY'; then break; fi; sleep 1; done")
 
     # Copy client.yml to client node
     client.copy_from_host("${clientConfigPath}", "/tmp/any-sync-client.yml")
