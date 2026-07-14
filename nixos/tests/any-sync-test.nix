@@ -156,8 +156,10 @@ pkgs.testers.nixosTest {
       services.minio = {
         enable = true;
         browser = false;
-        accessKey = "minioAccess";
-        secretKey = "minioSecret";
+        rootCredentialsFile = pkgs.writeText "minio-root-credentials" ''
+          MINIO_ROOT_USER=minioAccess
+          MINIO_ROOT_PASSWORD=minioSecret
+        '';
       };
 
       services.any-sync-consensus = {
