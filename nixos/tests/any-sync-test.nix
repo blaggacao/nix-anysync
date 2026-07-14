@@ -262,10 +262,6 @@ pkgs.testers.nixosTest {
                     gcTTL = 60;
                     syncPeriod = 600;
                   };
-                  storage = {
-                    path = "/storage";
-                    anyStorePath = "/anyStorage";
-                  };
                   nodeSync = {
                     periodicSyncHours = 2;
                     syncOnStart = true;
@@ -331,12 +327,12 @@ pkgs.testers.nixosTest {
     client.copy_from_host("${clientConfigPath}", "/tmp/any-sync-client.yml")
 
     # Wait for services to be up
+    server.wait_for_unit("any-sync-consensus.service");
+    server.wait_for_unit("any-sync-coordinator.service");
+    server.wait_for_unit("any-sync-filenode.service");
     server.wait_for_unit("any-sync-node-1.service");
     server.wait_for_unit("any-sync-node-2.service");
     server.wait_for_unit("any-sync-node-3.service");
-    server.wait_for_unit("any-sync-filenode.service");
-    server.wait_for_unit("any-sync-coordinator.service");
-    server.wait_for_unit("any-sync-consensus.service");
 
     # netcheck from client
     client.succeed("any-sync-netcheck -c /tmp/any-sync-client.yml");
