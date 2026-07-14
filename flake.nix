@@ -26,6 +26,7 @@
         any-sync-consensus = final.callPackage ./pkgs/any-sync/any-sync-consensus.nix { };
         any-sync-node = final.callPackage ./pkgs/any-sync/any-sync-node.nix { };
         any-sync-filenode = final.callPackage ./pkgs/any-sync/any-sync-filenode.nix { };
+        valkey-bloom = final.callPackage ./pkgs/valkey-bloom { };
       };
 
       # Nixpkgs instantiated for supported system types.
@@ -57,6 +58,7 @@
           any-sync-consensus = pkgs.any-sync-consensus;
           any-sync-node = pkgs.any-sync-node;
           any-sync-filenode = pkgs.any-sync-filenode;
+          valkey-bloom = pkgs.valkey-bloom;
         }
       );
 
