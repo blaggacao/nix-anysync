@@ -101,7 +101,7 @@ in
         map (
           i:
           nameValuePair "any-sync-node-${toString i}" {
-            after = [ "network.target" ];
+            after = [ "network.target" "any-sync-consensus.service" "any-sync-coordinator.service"];
             wants = [
               "any-sync-filenode.service"
               "any-sync-consensus.service"
