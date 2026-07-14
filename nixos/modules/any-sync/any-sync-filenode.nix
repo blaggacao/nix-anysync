@@ -58,7 +58,7 @@ in
       users.groups.${group} = { };
 
       systemd.services.any-sync-filenode = {
-        after = [ "network.target" ];
+        after = [ "network.target" "any-sync-consensus.service" "any-sync-coordinator.service" ];
         wants = [
           "redis-anysync-files.service"
           "minio.service"
@@ -81,8 +81,8 @@ in
           # ReadWritePaths = [ "/var/lib/network-store/any-sync-filenode" ];
           # Restart = "on-failure";
           # RestartSec = "5s";
-          # StateDirectory = "any-sync";
-          # WorkingDirectory = "/var/lib/any-sync";
+          StateDirectory = "any-sync/file-node";
+          WorkingDirectory = "/var/lib/any-sync";
           # PrivateTmp = true;
           # ProtectSystem = "full";
           # NoNewPrivileges = true;

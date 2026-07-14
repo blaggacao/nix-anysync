@@ -57,7 +57,7 @@ in
       users.groups.${group} = { };
 
       systemd.services.any-sync-coordinator = {
-        after = [ "network.target" "mongodb.service" ];
+        after = [ "network.target" "mongodb.service" "any-sync-consensus.service" ];
         wants = [ "mongodb.service" ];
         wantedBy = [ "multi-user.target" ];
 
@@ -75,8 +75,8 @@ in
           # ReadWritePaths = [ "/var/lib/network-store/any-sync-coordinator" ];
           # Restart = "on-failure";
           # RestartSec = "5s";
-          # StateDirectory = "any-sync";
-          # WorkingDirectory = "/var/lib/any-sync";
+          StateDirectory = "any-sync/coordinator";
+          WorkingDirectory = "/var/lib/any-sync";
           # PrivateTmp = true;
           # ProtectSystem = "full";
           # NoNewPrivileges = true;

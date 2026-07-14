@@ -77,8 +77,8 @@ in
           # ReadWritePaths = [ "/var/lib/network-store/any-sync-consensus" ];
           # Restart = "on-failure";
           # RestartSec = "5s";
-          # StateDirectory = "any-sync";
-          # WorkingDirectory = "/var/lib/any-sync";
+          StateDirectory = "any-sync/consensus";
+          WorkingDirectory = "/var/lib/any-sync";
           # PrivateTmp = true;
           # ProtectSystem = "full";
           # NoNewPrivileges = true;
