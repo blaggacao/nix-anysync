@@ -122,6 +122,7 @@ pkgs.testers.nixosTest {
         any-sync-coordinator
         any-sync-filenode
         any-sync-node
+        anytype-cli
       ];
 
       networking = {
@@ -301,8 +302,16 @@ pkgs.testers.nixosTest {
             ];
       };
 
+      # anytype-cli service (minimal for testing)
+      services.anytype-cli = {
+        enable = true;
+        bootstrapOnFirstRun = true;
+        networkConfigPath = clientConfigPath;
+      };
+
       # Add MongoDB shell for replica set status check in tests
       environment.systemPackages = [ pkgs.mongodb-ce ];
+
     };
 
     client = {
@@ -341,6 +350,12 @@ pkgs.testers.nixosTest {
     server.wait_for_unit("any-sync-node-1.service");
     server.wait_for_unit("any-sync-node-2.service");
     server.wait_for_unit("any-sync-node-3.service");
+
+    # Wait for anytype-cli service and check its ports
+    server.wait_for_unit("anytype-cli.service");
+    server.wait_for_open_port(31010);  # GRPC
+    server.wait_for_open_port(31011);  # GRPC-Web
+    server.wait_for_open_port(31012);  # API
 
     # node-1
     server.wait_for_open_port(1101);  # tcp yamux
