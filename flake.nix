@@ -51,6 +51,7 @@
       );
     in
     {
+      inherit overlay;
       packages = forAllSystems (
         system:
         let
