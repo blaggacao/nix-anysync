@@ -86,6 +86,7 @@
         any-sync-coordinator = ./nixos/modules/any-sync/any-sync-coordinator.nix;
         any-sync-filenode = ./nixos/modules/any-sync/any-sync-filenode.nix;
         any-sync-node = ./nixos/modules/any-sync/any-sync-node.nix;
+        anytype-cli = ./nixos/modules/any-sync/anytype-cli.nix;
       };
 
       devShells = forAllSystems (
