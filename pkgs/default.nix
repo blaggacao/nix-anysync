@@ -7,5 +7,6 @@ final: prev:
   any-sync-consensus = final.callPackage ./any-sync/any-sync-consensus.nix {};
   any-sync-node = final.callPackage ./any-sync/any-sync-node.nix {};
   any-sync-filenode = final.callPackage ./any-sync/any-sync-filenode.nix {};
+  anytype-agent-runtime = final.callPackage ./anytype/anytype-agent-runtime.nix {};
   valkey-bloom = final.callPackage ./valkey-bloom {};
 }
