@@ -27,6 +27,7 @@
         any-sync-node = final.callPackage ./pkgs/any-sync/any-sync-node.nix { };
         any-sync-filenode = final.callPackage ./pkgs/any-sync/any-sync-filenode.nix { };
         anytype-agent-runtime = final.callPackage ./pkgs/anytype/anytype-agent-runtime.nix { };
+        anytype-mcp = final.callPackage ./pkgs/anytype/anytype-mcp.nix { };
         valkey-bloom = final.callPackage ./pkgs/valkey-bloom { };
       };
 
