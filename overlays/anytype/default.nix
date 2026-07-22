@@ -5,21 +5,26 @@
   # https://patch-diff.githubusercontent.com/raw/anyproto/anytype-heart/pull/3220.patch
   anytype-heart = prev.anytype-heart.overrideAttrs (oldAttrs: rec {
     version = "0.50.17";
-    src = final.fetchFromGitHub {
-      owner = "anyproto";
-      repo = "anytype-heart";
-      tag = "v${version}";
-      sha256 = "sha256-2DXYpBc14z+q+kJNLScWSTqVSObolj/80FrVEwNU4cY=";
+    # ensure patches are available under the package's src attribute
+    src = final.applyPatches {
+      src = final.fetchFromGitHub {
+        owner = "anyproto";
+        repo = "anytype-heart";
+        tag = "v${version}";
+        hash = "sha256-2DXYpBc14z+q+kJNLScWSTqVSObolj/80FrVEwNU4cY=";
+      };
+      patches = [
+        (final.fetchurl {
+          url = "https://patch-diff.githubusercontent.com/raw/anyproto/anytype-heart/pull/3220.patch";
+          hash = "sha256-c+WtZitImfryzjAKI3hmIfjfKFLIO7A85osoTkIJZp8=";
+        })
+      ];
     };
-    patches = (oldAttrs.patches or [ ]) ++ [
-      (final.fetchurl {
-        url = "https://patch-diff.githubusercontent.com/raw/anyproto/anytype-heart/pull/3220.patch";
-        hash = "sha256-c+WtZitImfryzjAKI3hmIfjfKFLIO7A85osoTkIJZp8=";
-      })
-    ];
+    vendorHash = "sha256-n0fcWzUSv4AuAbepWPk5c8DldClQX+Juo3MLca+tLV4=";
   });
 
   # Override anytype-cli from nixpkgs to use v0.3.6 instead of v0.3.5
+  # and patch go.mod to use the locally patched anytype-heart source
   anytype-cli = prev.anytype-cli.overrideAttrs (oldAttrs: rec {
     version = "0.3.6";
     src = final.fetchFromGitHub {
@@ -28,6 +33,13 @@
       tag = "v${version}";
       sha256 = "sha256-T/mdF+pzApm15Cg2g1ybgU7pEHLsTC4jD7WuXzNqM2M=";
     };
-    vendorHash = "sha256-S6Xb2XYAn/cTC++1WK5cmXcC6QCZpPoYMRrjk/IPKas=";
+    # Set vendorHash to null to force go mod tidy after go.mod modifications
+    vendorHash = "sha256-ufOSCNpBExmuhqiFwyyyVbDNf3xr+m9m8mWw9gZc8r4=";
+    preBuild = oldAttrs.postPatch or "" + ''
+      echo 'preBuild - rewriting go.mod'
+      # Patch go.mod to use the locally patched anytype-heart source from nix store
+      go mod edit -replace github.com/anyproto/anytype-heart="${final.anytype-heart.src}"
+      go mod tidy
+    '';
   });
 }
