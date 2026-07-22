@@ -16,7 +16,7 @@
       patches = [
         (final.fetchurl {
           url = "https://patch-diff.githubusercontent.com/raw/anyproto/anytype-heart/pull/3220.patch";
-          hash = "sha256-hm0fW9ywG/8AKDkNwztkOnlxM/nvPdKv97AI9shiGOs=";
+          hash = "sha256-pf7sDINXH0lYYg9VvOBKz9CcOc4LAK0MuAKEL8HKee4=";
         })
       ];
     };
