@@ -19,17 +19,19 @@
       # Helper function to generate an attrset '{ x86_64-linux = f "x86_64-linux"; ... }'.
       forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
 
-      # Define the overlay
-      overlay = final: prev: {
-        any-sync-tools = final.callPackage ./pkgs/any-sync/any-sync-tools.nix { };
-        any-sync-coordinator = final.callPackage ./pkgs/any-sync/any-sync-coordinator.nix { };
-        any-sync-consensus = final.callPackage ./pkgs/any-sync/any-sync-consensus.nix { };
-        any-sync-node = final.callPackage ./pkgs/any-sync/any-sync-node.nix { };
-        any-sync-filenode = final.callPackage ./pkgs/any-sync/any-sync-filenode.nix { };
-        anytype-agent-runtime = final.callPackage ./pkgs/anytype/anytype-agent-runtime.nix { };
-        anytype-mcp = final.callPackage ./pkgs/anytype/anytype-mcp.nix { };
-        valkey-bloom = final.callPackage ./pkgs/valkey-bloom { };
-      };
+      # Import consolidated overlays and packages
+      localOverlays = import ./overlays;
+      localPackages = import ./pkgs;
+      localModules = import ./nixos/modules;
+
+      # Define the overlay by merging all overlay components
+      overlay = final: prev:
+        (localOverlays final prev)
+        // (localPackages final prev);
+
+      # Get overlay package names via fake-evaluation (lazy evaluation allows this)
+      # We use a dummy overlay context - since we only evaluate keys, the RHS is never forced
+      packageNames = builtins.attrNames (overlay null null);
 
       # Nixpkgs instantiated for supported system types.
       nixpkgsFor = forAllSystems (
@@ -54,14 +56,9 @@
         let
           pkgs = nixpkgsFor.${system};
         in
-        {
-          any-sync-tools = pkgs.any-sync-tools;
-          any-sync-coordinator = pkgs.any-sync-coordinator;
-          any-sync-consensus = pkgs.any-sync-consensus;
-          any-sync-node = pkgs.any-sync-node;
-          any-sync-filenode = pkgs.any-sync-filenode;
-          valkey-bloom = pkgs.valkey-bloom;
-        }
+        # Generate package outputs dynamically from package names
+        # This avoids duplicating package names in multiple places
+        nixpkgs.lib.genAttrs packageNames (name: pkgs.${name})
       );
 
       checks = forAllSystems (
@@ -72,23 +69,12 @@
         {
           any-sync-test = pkgs.callPackage ./nixos/tests/any-sync-test.nix {
             inherit pkgs;
-            modules = {
-              any-sync-consensus = ./nixos/modules/any-sync/any-sync-consensus.nix;
-              any-sync-coordinator = ./nixos/modules/any-sync/any-sync-coordinator.nix;
-              any-sync-filenode = ./nixos/modules/any-sync/any-sync-filenode.nix;
-              any-sync-node = ./nixos/modules/any-sync/any-sync-node.nix;
-            };
+            modules = localModules;
           };
         }
       );
 
-      nixosModules = {
-        any-sync-consensus = ./nixos/modules/any-sync/any-sync-consensus.nix;
-        any-sync-coordinator = ./nixos/modules/any-sync/any-sync-coordinator.nix;
-        any-sync-filenode = ./nixos/modules/any-sync/any-sync-filenode.nix;
-        any-sync-node = ./nixos/modules/any-sync/any-sync-node.nix;
-        anytype-cli = ./nixos/modules/any-sync/anytype-cli.nix;
-      };
+      nixosModules = localModules;
 
       devShells = forAllSystems (
         system:
