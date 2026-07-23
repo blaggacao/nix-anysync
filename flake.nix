@@ -26,6 +26,7 @@
         any-sync-consensus = final.callPackage ./pkgs/any-sync/any-sync-consensus.nix { };
         any-sync-node = final.callPackage ./pkgs/any-sync/any-sync-node.nix { };
         any-sync-filenode = final.callPackage ./pkgs/any-sync/any-sync-filenode.nix { };
+        anytype-agent-runtime = final.callPackage ./pkgs/anytype/anytype-agent-runtime.nix { };
         valkey-bloom = final.callPackage ./pkgs/valkey-bloom { };
       };
 
