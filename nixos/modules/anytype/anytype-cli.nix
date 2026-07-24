@@ -22,7 +22,7 @@ let
     if cfg.networkConfigPath != null then
       cfg.networkConfigPath
     else if cfg.networkConfig != null then
-      pkgs.writeText "anytype-network.yml" (lib.generators.toYAML cfg.networkConfig)
+      pkgs.writeText "anytype-network.yml" (lib.generators.toYAML {} cfg.networkConfig)
     else
       null;
 
@@ -74,15 +74,6 @@ in
         }
       ];
 
-      users.users.${user} = {
-        isSystemUser = true;
-        group = group;
-        createHome = false;
-        home = "/var/lib/any-sync/anytype";
-      };
-
-      users.groups.${group} = { };
-
       systemd.services.anytype-cli-bootstrap = mkIf cfg.bootstrapOnFirstRun {
         description = "Anytype CLI bootstrap - create bot account on first run";
         after = [ "network.target" "any-sync-coordinator.service" ];
@@ -101,12 +92,12 @@ in
         };
 
         script = ''
-          if [ ! -f config.json ]; then
+          if [ ! -f ''$HOME/.anytype/config.json ]; then
             echo 'Creating bot account...';
             ${pkgs.anytype-cli}/bin/anytype-cli serve &
             SERVER_PID=$!;
             sleep 2;
-            ${pkgs.anytype-cli}/bin/anytype-cli auth create ${cfg.accountName} --network-config ${networkConfigPath} || true;
+            ${pkgs.anytype-cli}/bin/anytype-cli auth create ${cfg.accountName} --network-config ${networkConfigPath};
             echo 'Waiting for account initialization...';
             sleep 2;
             kill $SERVER_PID 2>/dev/null || true;
@@ -144,6 +135,7 @@ in
       };
     })
 
+    # TODO: check if necessary? home = "/var/lib/any-sync/anytype";
     (common.addUserAndGroup cfg user group)
   ];
 }
