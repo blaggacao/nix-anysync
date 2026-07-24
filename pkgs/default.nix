@@ -8,5 +8,6 @@ final: prev:
   any-sync-node = final.callPackage ./any-sync/any-sync-node.nix {};
   any-sync-filenode = final.callPackage ./any-sync/any-sync-filenode.nix {};
   anytype-agent-runtime = final.callPackage ./anytype/anytype-agent-runtime.nix {};
+  anytype-mcp = final.callPackage ./anytype/anytype-mcp.nix {};
   valkey-bloom = final.callPackage ./valkey-bloom {};
 }
